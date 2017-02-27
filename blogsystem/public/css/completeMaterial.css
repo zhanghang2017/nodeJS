@@ -1,0 +1,59 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+body{
+    background:url("/img/bg.jpg") no-repeat;
+    background-size:100%;
+    overflow: hidden;
+}
+.container{
+    margin-top: 10%;
+    width: 30%;
+    padding: 30px 30px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.5);;
+}
+.container span{
+    font-size: 18px;
+    color:#ffffff;
+}
+.avatar{
+    position: relative;
+}
+.avatar img{
+  width: 100px;
+  height: 100px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#fileInput{
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top:0px;
+    left:15px;
+    opacity: 0;
+    cursor:pointer;
+}
+#submitTips{
+    position: fixed;
+    top: 10%;
+    left: 35%;
+    height: 120px;
+    width: 30%;
+    display: none;
+}
+#tips{
+    position: fixed;
+    top: 10%;
+    left: 35%;
+    height: 120px;
+    width: 30%;
+    display: none;
+}
+.tips_p{
+    font-size: 15px;
+    font-weight: 600;
+}

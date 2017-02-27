@@ -1,0 +1,25 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+body{
+    background:url("/img/bg.jpg") no-repeat;
+    background-size:100%;
+    overflow: hidden;
+}
+.container{
+    margin-top: 12%;
+    width: 25%;
+    padding: 30px 30px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.5);;
+}
+.container span{
+    font-size: 18px;
+    color:#ffffff;
+}
+#register a{
+ color: #ffffff;
+   text-decoration: none;
+}

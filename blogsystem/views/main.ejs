@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>博客主页</title>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="/js/jquery-1.9.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">BLOG</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">All Dynamics</a></li>
+                <li><a href="#">Mine Dynamics</a></li>
+                <li><a href="#">Album</a></li>
+                <li><a href="#">Users Manager</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search Article">
+                </div>
+                <button type="submit" class="btn btn-info">Search</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li><input id="userAccount" type="hidden" value="<%=account%>"/><input id="userNickName" type="hidden" value="<%=nickName%>"/><a href="#">Welcome！<%=nickName%></a></li>
+                <li><a href="/completeMaterial">CompleteMaterial</a></li>
+                <li><a href="/exitLogin">Exit</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="publish">
+        <ul>
+            <li>
+                <img src="<%=avatar%>"/>
+             <p><span class="glyphicon glyphicon-user"></span><%=nickName%></p>
+             <p><span class="glyphicon glyphicon-list-alt"></span><span id="blogNum"></span></p>
+            </li>
+            <li>
+              <textarea name="publicDynamic" rows="5" style="width: 100%"></textarea>
+
+              <button type="button" id="PublicDynamic" class="btn btn-success col-lg-offset-10 col-lg-2">Public Dynamic</button>
+            </li>
+            <div style="clear:both"></div>
+        </ul>
+    </div>
+
+    <div class="articlesList">
+
+        <div class="panel ">
+            <div class="panel-heading">
+                <h3 class="panel-title">全部动态</h3>
+            </div>
+            <div class="panel-body">
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+
+    //查询全部动态微博数量
+    $.get("/selectBlogCounts",{account:$("#userAccount").val()},function(result){
+        if(result=="-1"){
+             alert("服务器错误");
+        }else{
+            $("#blogNum").html("博客："+result+"篇")
+        }
+    });
+
+    //查询全部动态微博
+    selectALL();
+    //发布博客
+    $("#PublicDynamic").click(function(){
+        if($("textarea[name=publicDynamic]").val()==""){
+                alert("发布内容不能为空");
+        }else{
+            var data={
+                userAccount:$("#userAccount").val(),
+                content:$("textarea[name=publicDynamic]").val()
+            }
+            $.post("/publicDynamic",data,function(result){
+                if(result=="1"){
+                    alert("发布成功");
+                    window.location.href="/showMain";
+                }else if(result=="0"){
+                    alert("服务器错误，发布失败");
+                }else if(result=="-1"){
+                    alert("发布失败");
+                }
+            })
+        }
+
+    });
+
+
+    function toggle(span_json){
+        for(var i=0;i<span_json.span.length;i++){
+            var span_item=span_json.span[i];
+            var comment_user=$(span_item).closest(".comment").find(".comment_user").val();
+            var login_user=$("#userAccount").val();
+
+            if(span_json.flag=="reply"&&comment_user!=login_user){
+                $(span_item).show();
+            }else if(span_json.flag=="delete"&&comment_user==login_user){
+                $(span_item).show();
+            }
+        }
+    }
+    //查询全部动态微博
+function selectALL(){
+    $.get("/selectBlogs",function(result){
+        for(var i=0;i<result.length;i++){
+            var item=result[i];
+            var html="<div class='article'><input class='blog_id' type='hidden' value='"+item._id+"'/><input type='hidden' class=\"articleId\" value='"+item._id+"'/>"+
+                    "<ul>"+
+                    "<li>"+
+                    "<img src='"+item.user.avatar+"'/>"+
+                    "<span><p>"+item.user.nickName+"</p><p>"+item.date+"</p></span>"+
+                    "<div style='clear:both'></div>"+
+                    "</li>"+
+                    "<li>"+
+                    "<p>"+item.content+"</p>"+
+                    "</li>"+
+                    "<li>"+
+                    "<p><button class=\"btn btn-primary support\" type=\"button\">赞 <span class=\"badge\">"+item.support.length+"</span></button></p>"+
+                    "</li>";
+            var comment_button= "<li class=\"publicComment\">"+
+                    "<textarea rows=\"2\" class=\"textarea\" style=\"width: 90%;background: #2E2E2E;border: 1px solid #A6A6A6\"></textarea>"+
+                    "<p><button  type=\"button\" class=\"btn btn-success commentBtn\">Comment</button></p>"+
+                    "</li></ul><div class=\"division\"></div></div>";
+
+            if(item.comment.length!=0){
+                var comment_html="";
+
+                for(var j=0;j<item.comment.length;j++){
+                    var arr=item.comment[j];
+                    var _comment=arr;
+                    comment_html+= "<li>"+
+                            "<div class=\"comment\">"+
+                            "<dl>"+
+                            "<dt><img src='"+_comment.user.avatar+"'/><input class='comment_id' type='hidden' value='"+_comment._id+"'/><input class='comment_user' type='hidden' value='"+_comment.user._id+"'/><span>"+_comment.user.nickName+"：</span></dt>"+
+                            "<dd>"+_comment.body+"</dd>"+
+                            "<dd>"+_comment.date+"<span class='delete'><a>删除</a></span><span class='reply'><input class='replyUser' type='hidden' value='"+_comment.user._id+"'/><input class='replyUserNickName' type='hidden' value='"+_comment.user.nickName+"'/><a>回复</a></span></dd>"+
+                            "<dd class='replyInput'><input type='hidden' class='toUserId'  value='"+_comment.user._id+"'/><textarea rows='2' /></textarea><div class='triangle-up'></div> <button class='btn btn-primary replyBtn'>回复</button></dd>";
+
+
+                    var last_html="</dl></div></li>";
+                    var reply_html="";
+                    if(arr.reply.length!=0){
+                        for(var n=0;n<arr.reply.length;n++){
+                            var replyItem=arr.reply[n];
+                            reply_html+="<dd class='replyDd'><input class='replyItemId' type='hidden' value='"+replyItem._id+"'/><input type='hidden' class='fromUserId'  value='"+replyItem.fromUser._id+"'/>"+replyItem.fromUser.nickName+" 回复 "+"<input type='hidden' class='toUserId'  value='"+replyItem.toUser._id+"'/>"+replyItem.toUser.nickName+"："+"<span style='color:#A6A6A6'>"+replyItem.body+"</span>"+
+                                    "<p style='color:#A6A6A6;margin-top: 5px;'>"+replyItem.date+"<span style='padding-left: 15px;' class='reply_delete'><a style='color: white'>删除</a></span></p></dd>"
+//                          "<span style='margin-left: 15px;display: inline-block'  class='reply'><input class='replyUser' type='hidden' value='"+_comment.user._id+"'/><input class='replyUserNickName' type='hidden' value='"+_comment.user.nickName+"'/><a>回复</a></span></dd>"
+//                         "<dd class='replyInput'><input type='hidden' class='toUserId'  value='"+replyItem.toUser._id+"'/><textarea rows='2' /></textarea><div class='triangle-up'></div> <button class='btn btn-primary replyBtn'>回复</button></dd>";
+                        }
+                    }
+                    comment_html+=reply_html+=last_html;
+
+                }
+                $(".panel-body").append(html+comment_html+comment_button);
+            }else{
+                $(".panel-body").append(html+comment_button);
+            }
+        }
+        //回复操作
+        $(".replyBtn").click(function(){
+            var reply_body= $(this).closest(".replyInput").find("textarea").val();
+            if(reply_body==""){
+                alert("回复内容不能为空");
+            }else{
+                var toUserId=$(this).closest(".replyInput").find(".toUserId").val();
+                var formUserId=$("#userAccount").val();
+                var data={
+                    blog_id:$(this).closest(".article").find(".articleId").val(),
+                    comment_id:$(this).closest(".comment").find(".comment_id").val(),
+                    fromUser:formUserId,
+                    toUser:toUserId,
+                    body:reply_body
+                }
+                $.post("/reply",data,function(result){
+                    if(result=="1"){
+                        alert("回复成功");
+                        window.location.href="/showMain";
+                    }else if(result=="0"){
+                        alert("提交请求失败");
+                    }else if(result=="-1"){
+                        alert("服务器错误");
+                    }
+                })
+            }
+        });
+        //删除按钮显示与隐藏
+        toggle({span:$(".delete"),flag:"delete"});
+        //回复按钮的显示与隐藏
+        toggle({span:$(".reply"),flag:"reply"});
+
+        var fromUserId=$(".fromUserId");
+        for(var j=0;j<fromUserId.length;j++){
+            var fromUserId_item=fromUserId[j];
+            if(fromUserId_item.value==$("#userAccount").val()){
+                $(fromUserId_item).closest(".replyDd").find(".reply_delete").show();
+            }
+        }
+        //删除回复
+        $(".reply_delete").click(function(){
+            var data={
+                comment_id:$(this).closest(".comment").find(".comment_id").val(),
+                blog_id:$(this).closest(".article").find(".blog_id").val(),
+                reply_id:$(this).closest(".replyDd").find(".replyItemId").val()
+            }
+            $.post("/deleteReply",data,function(result){
+                if(result=="1"){
+                    alert("删除成功")
+                    window.location.href="/showMain";
+                }else if(result=="0"){
+                    alert("服务器错误")
+                }else if(result=="-1"){
+                    alert("提交请求失败")
+                }
+            });
+
+        });
+        //删除评论
+        $(".delete").click(function(){
+            var that=this;
+            if(confirm("是否删除这条评论？")){
+                var comment_id=$(this).closest(".comment").find(".comment_id").val();
+                var blog_id=$(this).closest(".article").find(".blog_id").val();
+                var data={
+                    comment_id:comment_id,
+                    blog_id:blog_id
+                }
+                $.post("/deleteComment",data,function(result){
+                    if(result=="1"){
+
+                        $(that).closest("li").remove();
+                    }else if(result=="0"){
+                        alert("提交请求失败");
+                    }else if(result=="-1"){
+                        alert("服务器错误");
+                    }
+                });
+            }
+
+        });
+        //提交评论
+        $(".commentBtn").click(function(){
+            if($(this).closest(".article").find(".textarea").val()==""){
+                alert("评论不能为空");
+            }else{
+                var data={
+                    blog_id:$(this).closest(".article").find("input[type=hidden]").val(),
+                    body:$(this).closest(".article").find(".textarea").val(),
+                    user:$("#userAccount").val()
+                }
+                $.post("/comment",data,function(result){
+                    if(result=="1"){
+                        alert("评论成功");
+                        window.location.href="/showMain";
+                    }else if(result=="0"){
+                        alert("服务器错误，评论失败");
+                    }else if(result=="-1"){
+                        alert("评论失败");
+                    }
+                })
+            }
+
+
+        });
+        //点赞
+        $(".support").click(function(){
+            var that=this;
+            var articleId=$(this).closest(".article").find(".articleId").val();
+            var userAccount=$("#userAccount").val();
+            var data={
+                articleId:articleId,
+                userAccount:userAccount
+            }
+            $.post("/support",data,function(result){
+                if(result==="1"){
+                    alert("点赞成功！");
+                    var num=parseInt($(that).find(".badge").html())+1;
+                    $(that).find(".badge").html(num);
+                }else if(result==="0"){
+                    alert("请求错误！");
+                }else if(result==="-1"){
+                    alert("查询博客失败！");
+                }else if(result==="-2"){
+                    alert("您已经点过赞！");
+                }else if(result==="-3"){
+                    alert("点赞失败！");
+                }
+
+            });
+
+        });
+        //回复框
+        $(".reply").click(function(){
+            var host=$("#userNickName").val();
+            var replyUserNickName=$(this).find(".replyUserNickName").val();
+            $(this).closest("dd").next(".replyInput").find("textarea").attr("placeholder"," 回复 "+replyUserNickName+"：");
+
+            if( $(this).closest("dd").next(".replyInput").is(":visible")){
+                $(this).closest("dd").next(".replyInput").fadeOut(300);
+            }else {
+                $(this).closest("dd").next(".replyInput").fadeIn(300);
+            }
+
+        });
+    })
+}
+</script>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>完善个人资料</title>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/completeMaterial.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="/js/jquery-1.9.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">BLOG</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li ><a href="#">All Dynamics</a></li>
+                <li><a href="#">Mine Dynamics</a></li>
+                <li><a href="#">Album</a></li>
+                <li><a href="#">Users Manager</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><input id="userAccount" type="hidden" value="<%=account%>"/><a href="#">Welcome！<%=nickName%></a></li>
+                <li class="active"><a href="/completeMaterial">CompleteMaterial</a></li>
+                <li><a href="/exitLogin">Exit</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <form class="form-horizontal " id="form" action="/doComplete" method="post" enctype="multipart/form-data" >
+        <input name="account" type="hidden" value="<%=account%>"/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">NickName</label>
+            <div class="col-sm-10">
+                <input type="text" name="nickName" class="form-control" value="" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label  class="col-sm-2 control-label">Avatar</label>
+            <div class="col-sm-10 avatar">
+                <img id="avatarImg" src="" alt=""/>
+                <input type="file" onchange="preView(this)" id="fileInput" name="avatar"/>
+
+                <div id="tips" class="alert alert-danger" >
+                    <p class="tips_p">Error Image Only Support  formats 【JPG  PNG  GIF  JPEG】.</p>
+                    <p style="margin-top: 30px">
+                        <button id="tips_cancel" type="button" class="btn btn-danger col-lg-3">Sure</button>
+                    </p>
+                </div>
+                <p class="text-primary" style="margin-top: 10px;padding-left: 10px">点击图片<br/>更换头像</p>
+            </div>
+        </div>
+        <div id="submitTips" class="alert alert-danger">
+            <h4>If select the default picture ?</h4>
+            <p style="margin-top: 30px">
+                <button id="sureSubmit" type="button" class="btn btn-danger col-lg-3">Sure</button>
+                <button id="cancel" type="button" class="btn btn-danger col-lg-offset-1 col-lg-3">Cancel</button>
+            </p>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button id="submit_button" type="button" class="btn btn-success col-lg-4">Submit</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+</body>
+<script type="text/javascript">
+
+    $("#tips_cancel").click(function(){
+           $("#tips").fadeOut(300);
+    });
+    $("#cancel").click(function(){
+        $("#submitTips").fadeOut(300);
+    });
+
+    //提交默认图片
+    $("#sureSubmit").click(function(){
+       document.getElementById("form").submit();
+    });
+
+    $("#submit_button").click(function(){
+        var value=$("input[type=file]").val();
+        if(value==""){
+            $("#submitTips").fadeIn(300);
+        }else{
+            $("#form")[0].submit();
+        }
+
+     });
+     $(function(){
+         var userAccount=$("#userAccount").val();
+         data={
+             userAccount:userAccount
+         }
+         $.get("/selectUser",data,function(result){
+              console.log(result);
+              $("input[name=nickName]").val(result[0].nickName);
+              $("#avatarImg").attr("src",result[0].avatar);
+
+         });
+     })
+
+    function preView(arg){
+        var file=arg.files[0];
+        var arr_format=["JPG","PNG","GIF","JPEG"];
+        if(arg.value!=""){
+            var value=arg.value;
+            var extendName=value.substring(value.lastIndexOf(".")+1);
+
+            if(arr_format.indexOf(extendName.toUpperCase())==-1){
+                $("#tips").fadeIn(300);
+                arg.value="";
+            }else{
+                var reader=new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = function () {
+                    $("#avatarImg").attr("src",reader.result);
+                }
+           }
+        }
+    }
+
+</script>
+</html>
